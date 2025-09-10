@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.services import orders_service
 from app.schemas.orders import OrderCreate, Order
+from app.core.security import get_current_admin_user
 
 from typing import List
 
@@ -28,7 +29,7 @@ def create_new_order(order_data: OrderCreate):
     
     return created_order
 
-@router.get("", response_model=List[Order])
+@router.get("", response_model=List[Order], dependencies=[Depends(get_current_admin_user)])
 def read_orders(status: str = 'pending'):
     '''
     특정 상태의 주문 목록을 조회하는 API
