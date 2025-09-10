@@ -78,3 +78,24 @@ def create_order(order_data: OrderCreate):
     # API 응답에는 table_id 대신 table_no를 다시 넣어주면 더 친절합니다.
     created_order['table_no'] = order_data.table_no
     return created_order
+
+def get_orders(status: str):
+    '''
+    특정 상태의 주문 목록을 조회
+    orders 테이블과 tables 테이블을 조인하여 table_no를 함게 가져옴
+    '''
+    try:
+        # Supabase의 PostgREST는 외래 키 관계를 이용해 쉽게 조인할 수 있습니다.
+        # "*, tables(table_no)"는 orders의 모든 컬럼과 함께, 
+        # 관계가 설정된 tables 테이블에서 table_no 컬럼을 가져오라는 의미입니다.
+        response = (
+            supabase.table("orders")
+            .select("*, tables(table_no)")
+            .eq("order_status", status)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return response.data
+    except Exception as e:
+        print(f"에러 패칭 오더스 : {e}")
+        return []
